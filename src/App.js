@@ -2,6 +2,7 @@ import { Col, Container, Row } from 'react-bootstrap';
 import './App.css';
 import { useEffect, useState } from 'react';
 import TodoLi from './Components/TodoLi';
+import Timerdemo from './Timerdemo';
 
 function App() {
   let [localData,setLocaldata] = useState([])
@@ -25,7 +26,8 @@ function App() {
   // Set data to Localstorage
   const handleButtonClick = () => {
     let localData = JSON.parse(localStorage.getItem("localData"))
-    if (localData) {
+    if (localData ) {
+      if(input){
       let maxid = localData.reduce((max, obj) => Math.max(max, obj.id), 0)
       const obj = {
         id: maxid + 1,
@@ -40,7 +42,9 @@ function App() {
       localStorage.setItem("localData", JSON.stringify(localData))
       setInput("")
       setFilteredData(localData)
+      }
     } else {
+      if(input){
       let array = []
       let obj = {
         id: 1,
@@ -56,12 +60,14 @@ function App() {
       setInput("")
       setFilteredData(array)
     }
+    }
   }
 
   // Clear All
   const handleClearAll = () => {
-    localStorage.clear()
-    setFilteredData([])
+    localStorage.removeItem("localData");
+    setFilteredData([]);
+    window.location.reload()
   }
 
   //Data filter
@@ -113,6 +119,7 @@ function App() {
   };
 
   return (
+    <>
     <Container fluid className="p-0">
       <Col className="App">
         {/* TODO Background Image */}
@@ -170,6 +177,8 @@ function App() {
         </Row>
       </Col>
     </Container>
+    <Timerdemo/>
+    </>
   );
 }
 
