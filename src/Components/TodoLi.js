@@ -5,7 +5,6 @@ const TodoLi = ({ data2, filterfunc, childdata, EditedInput }) => {
     const [statee, setStatee] = useState(2)
     const [timers, setTimers] = useState([])
 
-
     useEffect(() => {
         startRunningTimersOnLoad();
         return () => {
@@ -13,7 +12,7 @@ const TodoLi = ({ data2, filterfunc, childdata, EditedInput }) => {
         };
     }, []);
 
-    // //Timer IN lis
+    //Timer IN lis
     function createTimer(timerId) {
         return {
             id: timerId,
@@ -22,25 +21,26 @@ const TodoLi = ({ data2, filterfunc, childdata, EditedInput }) => {
             elapsedTime: 0,
         };
     }
+    //ON relode timer
     function startRunningTimersOnLoad() {
         let localData = JSON.parse(localStorage.getItem("localData"));
         if (localData) {
             localData.forEach((element) => {
                 if (element.state == "2") {
-                   const timer = createTimer(element.id);
-                   timer.elapsedTime = element.elapsedTime || 0;
-                   timer.startTime = element.starttime ? moment(element.starttime, "H:mm:ss") : null;
-                   timer.timerInterval = setInterval(() => updateTimer(timer), 1000);
-                   if (timer.startTime) {
-                       setTimers(prevTimers => [...prevTimers, timer]);
-                   }
+                    const timer = createTimer(element.id);
+                    timer.elapsedTime = element.elapsedTime || 0;
+                    timer.startTime = element.starttime ? moment(element.starttime, "H:mm:ss") : null;
+                    timer.timerInterval = setInterval(() => updateTimer(timer), 1000);
+                    if (timer.startTime) {
+                        setTimers(prevTimers => [...prevTimers, timer]);
+                    }
                 }
-             });
+            });
         }
         filterfunc(localData)
     }
-
-    function startTimer(timerid,localData) {
+    //Start Timer
+    function startTimer(timerid, localData) {
         let time = moment().format("H:mm:ss");
         localData.forEach((element) => {
             if (element.id == timerid) {
@@ -48,7 +48,6 @@ const TodoLi = ({ data2, filterfunc, childdata, EditedInput }) => {
             }
         });
         localStorage.setItem("localData", JSON.stringify(localData));
-        console.log(localData,"dataaaaa")
         let timer = timers.find(timer => timer.id === timerid);
         if (!timer) {
             timer = createTimer(timerid);
@@ -60,14 +59,13 @@ const TodoLi = ({ data2, filterfunc, childdata, EditedInput }) => {
             setTimers(prevTimers => [...prevTimers, timer]);
         }
     }
-
+    //Update Timer
     function updateTimer(timer) {
         let localData = JSON.parse(localStorage.getItem("localData"));
         if (localData) {
             const currentTime = moment();
             const duration = moment.duration(currentTime.diff(timer.startTime) + timer.elapsedTime, "milliseconds");
             const formattedTime = moment.utc(duration.asMilliseconds()).format("H:mm:ss");
-
             localData.forEach((element) => {
                 if (element.id == timer.id) {
                     element.currentTime = formattedTime
@@ -78,16 +76,15 @@ const TodoLi = ({ data2, filterfunc, childdata, EditedInput }) => {
         setTimers(prevTimers => prevTimers.map(t => t.id === timer.id ? timer : t));
         filterfunc(localData);
     }
-
-    function stopTimer(timerid,localData) {
+    // Stop TImer
+    function stopTimer(timerid, localData) {
         let time = moment().format("H:mm:ss");
         localData.forEach((element) => {
-           if (element.id == timerid) {
-              element.endtime = time;
-           }
+            if (element.id == timerid) {
+                element.endtime = time;
+            }
         });
         localStorage.setItem("localData", JSON.stringify(localData));
-
         setTimers(prevTimers => {
             return prevTimers.map(timer => {
                 if (timer.id === timerid) {
@@ -100,8 +97,8 @@ const TodoLi = ({ data2, filterfunc, childdata, EditedInput }) => {
         });
         filterfunc(localData);
     }
-
-    function resetTimer(timerid,localData) {
+    //Reset Timer
+    function resetTimer(timerid, localData) {
         const timerDataIndex = localData.findIndex(item => item.id === timerid);
         if (timerDataIndex !== -1) {
             localData[timerDataIndex].starttime = "0:00:00";
@@ -122,42 +119,42 @@ const TodoLi = ({ data2, filterfunc, childdata, EditedInput }) => {
             return timer;
         }));
     }
-
-  
-
     // switch function 
     const switchElement = (element, ids) => {
         let localData = JSON.parse(localStorage.getItem("localData"));
         let value = parseInt(element.value, 10);
         if (value === 1) {
             value = 2
-            startTimer(ids,localData);
+            startTimer(ids, localData);
         } else if (value === 2) {
             value = 3
-            stopTimer(ids,localData);
+            stopTimer(ids, localData);
         } else if (value === 3) {
             value = 1
-            resetTimer(ids,localData);
+            resetTimer(ids, localData);
         }
         element.value = value;
         const classList = ["tgl-on", "tgl-def", "tgl-off"];
         element.classList.remove(...classList);
         element.classList.add(classList[value - 1]);
-
+        //set data to localstorage
         localData.forEach((data) => {
             if (data.id == element.dataset.id) {
                 data.state = value.toString();
                 data.color = element.className;
+                if (data.state == 2) {
+                    data.strike = "strike"
+                } else {
+                    data.strike = "non-strike"
+                }
             }
         });
         localStorage.setItem("localData", JSON.stringify(localData));
     }
-
     //Edit Title
     const handleEdit = (element, id) => {
         childdata(element, id, statee)
     }
-
     //Delete Li
     const handeleDeleteLi = (id) => {
         const localData = JSON.parse(localStorage.getItem("localData")) || [];
@@ -165,7 +162,6 @@ const TodoLi = ({ data2, filterfunc, childdata, EditedInput }) => {
         localStorage.setItem("localData", JSON.stringify(updatedData));
         filterfunc(updatedData);
     }
-
     return (
         <ul className="todo-li" >
             {Array.isArray(data2) ? (
@@ -175,7 +171,7 @@ const TodoLi = ({ data2, filterfunc, childdata, EditedInput }) => {
                             <input type="range" name="points" data-id={element.id} min="1" step="1" id="custom-toggle" className={element.color} max="3" value={element.state} onClick={(e) => { switchElement(e.target, element.id) }} />
                         </div>
                         <div className="lable1">
-                            <label className="titleLable overflow-hidden" >{element.title}</label>
+                            <label className={`${element.strike} titleLable overflow-hidden`} >{element.title}</label>
                         </div>
                         <div className="timer">
                             <div className="time" id={`timer${element.id}`} data-timer={element.id}>{element.currentTime}</div>
@@ -189,7 +185,6 @@ const TodoLi = ({ data2, filterfunc, childdata, EditedInput }) => {
                 )) : (<h5 className=' text-center'>Array is Empty</h5>)
             }
         </ul>
-
     )
 }
 
